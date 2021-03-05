@@ -1,3 +1,4 @@
+arrow==1.0.2
 certifi==2020.12.5
 chardet==4.0.0
 click==7.1.2
@@ -123,9 +124,13 @@ pyobjc-framework-VideoSubscriberAccount==7.1
 pyobjc-framework-VideoToolbox==7.1
 pyobjc-framework-Vision==7.1
 pyobjc-framework-WebKit==7.1
+pyserial==3.5
 python-dateutil==2.8.1
 pytz==2021.1
+redis==3.5.3
 requests==2.25.1
+rq==1.7.0
+rq-dashboard==0.6.1
 schedule==1.0.0
 six==1.15.0
 tinydb==4.4.0
