@@ -15,7 +15,7 @@ import subprocess
 import serial
 
 r = redis.Redis()
-q = Queue(connection=r)
+q = Queue(connection=r, default_timeout=144000)
 
 app = Flask(__name__)
 app.config.from_object(rq_dashboard.default_settings)
@@ -114,6 +114,17 @@ def settings():
 
     return render_template("settings.html", teams=team_names, horn=horn)
 
+@app.route("/lights_horn")
+def lights_horn():
+    serial_port = '/dev/ttyACM0'
+    ser = serial.Serial(serial_port)
+    ser.baudrate = 9600
+    ser.write(b'0;0;255;')
+    ser.close()
+     # playsound('blues-horn.mp3')
+    subprocess.run(["omxplayer", "-o", "local", "./horn.mp3"])
+    return redirect("/") 
+
 
 if __name__ == "__main__":
-  app.run()
+  app.run(host="0.0.0.0")

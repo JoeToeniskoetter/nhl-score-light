@@ -7,6 +7,8 @@ from playsound import playsound
 import os
 from tinydb import TinyDB, Query
 import serial
+import subprocess
+import threading
 
 ###REQUIREMENTS##
 
@@ -30,6 +32,7 @@ class ScoreChecker():
     print("STARTING THE SCORE CHECKER")
     checking_score = self.table.all()[0]['checking_score']
     print(checking_score)
+    #self.play_horn()
     # if checking_score:
     #   print("already running")
     #   return
@@ -122,7 +125,7 @@ class ScoreChecker():
       if home_score > self.score:
         print(f"Looking for {self.team_id}, home_id = {home_team_id}")
         self.score = home_score
-        self.play_horn()
+        self.celebrate()
         print("GOAL!")
         #start the lights!
 
@@ -130,7 +133,7 @@ class ScoreChecker():
       if away_score > self.score:
         print(f"Looking for {self.team_id}, home_id = {away_team_id}")
         self.score = away_score
-        self.play_horn()
+        self.celebrate()
         print("GOAL!")
         #start the lights
 
@@ -140,18 +143,24 @@ class ScoreChecker():
       self.game_started = False
       self.table.update({"checking_score":False})
       
+  def celebrate(self):
+    horn_th = threading.Thread(target=self.play_horn)
+    horn_th.start()
+    lights_th = threading.Thread(target=self.goal)
+    lights_th.start()
 
   def play_horn(self):
     horn = self.database.all()[0]['horn']
     print(horn)
     if horn:
-      playsound('blues-horn.mp3')
+     # playsound('blues-horn.mp3')
+     subprocess.run(["omxplayer", "-o", "local", "./horn.mp3"])
 
   def goal(self):
-    serial_port = '/dev/tty.usbmodem14101'
+    serial_port = '/dev/ttyACM0'
     ser = serial.Serial(serial_port)
     ser.baudrate = 9600
-    ser.write(b'1')
+    ser.write(b'0;0;255;')
     ser.close() 
 
   def check_score_loop(self):
@@ -159,7 +168,7 @@ class ScoreChecker():
     print("checking score")
     try:
       self.check_score()
-      schedule.every(1).minutes.do(self.check_score).tag("score-check")
+      schedule.every(10).seconds.do(self.check_score).tag("score-check")
       while self.game_started:
         schedule.run_pending()
       schedule.clear("score-check")
